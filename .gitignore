@@ -213,3 +213,10 @@ rocket_connect/media/
 
 version*
 mongodb_version*
+
+bin/
+
+
+baileys-server/baileys_auth_info
+baileys-server/baileys_store_multi.json
+baileys-server/yarn.lock

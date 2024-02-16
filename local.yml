@@ -1,5 +1,8 @@
 version: "3.7"
 
+networks:
+  local-network:
+
 volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
@@ -9,6 +12,7 @@ volumes:
   local_wppconnect_tokens: {}
   local_prometeus_data: {}
   nodemodules: {}
+  app_auth: {}
 
 services:
 
@@ -39,6 +43,8 @@ services:
       retries: 3
 
     command: /start
+    networks:
+      - local-network
 
   postgres:
     build:
@@ -53,6 +59,8 @@ services:
       - local_postgres_data_backups:/backups:z
     env_file:
       - ./.envs/.local/.postgres
+    networks:
+      - local-network
 
   docs:
     image: rocket_connect_local_docs
@@ -69,15 +77,21 @@ services:
     ports:
       - "7000:7000"
     command: /start-docs
+    networks:
+      - local-network
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
     ports:
       - "8025:8025"
+    networks:
+      - local-network
 
   redis:
     image: redis:5.0
     container_name: redis
+    networks:
+      - local-network
 
   celeryworker:
     <<: *django
@@ -155,6 +169,8 @@ services:
         published: ${HOST_PORT:-3000}
         protocol: tcp
         mode: host
+    networks:
+      - local-network
 
   mongodb:
     image: docker.io/bitnami/mongodb:${MONGODB_VERSION:-4.4}
@@ -175,6 +191,8 @@ services:
       ALLOW_EMPTY_PASSWORD: ${ALLOW_EMPTY_PASSWORD:-yes}
     ports:
       - 27017:27017
+    networks:
+      - local-network
 
   webdav:
     image: bytemark/webdav
@@ -187,6 +205,8 @@ services:
       - LOCATION=/webdav
     ports:
       - 8011:80
+    networks:
+      - local-network
 
   wppconnect:
     image: wppconnect/server-cli:main
@@ -197,6 +217,8 @@ services:
       - local_wppconnect_tokens:/usr/src/server-cli/tokens
     ports:
       - "21465:21465"
+    networks:
+      - local-network
 
   # quepasa:
   #   image: sufficit/quepasa
@@ -220,12 +242,28 @@ services:
     image: 'php:apache'
     ports:
       - "80:80"
+    networks:
+      - local-network
     volumes:
       - ./compose/local/apache/site:/var/www/html
       - ./compose/local/apache/confs/additional.conf:/etc/apache2/conf-enabled/additional.conf
 
+  baileys:
+    build: 
+      context: .
+      dockerfile: ./compose/local/baileys/DockerFile
+    container_name: baileys
+    ports:
+      - "4000:5000"
+    restart: on-failure
+    volumes:
+      - app_auth:/src/auth
+    networks:
+      - local-network
   grafana:
     image: grafana/grafana:8.2.5
+    networks:
+      - local-network
     ports:
       - 3001:3000
     volumes:

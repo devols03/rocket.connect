@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # psycopg2 dependencies
   libpq-dev \
   # QR TOOLS
-  && apt install -y libzbar0 libzbar-dev python3-zbar \
+  && apt-get update && apt install -y libzbar0 libzbar-dev python3-zbar \
   # misc dependencies
-  && apt-get install -y curl
+  && apt-get update && apt-get install -y curl
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements .
